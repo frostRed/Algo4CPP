@@ -8,7 +8,6 @@ using std::string;
 using std::istringstream;
 
 
-
 template <typename T>
 class Stack {
 public:
@@ -61,6 +60,7 @@ private:
     Node* first;
     int N = 0;
 };
+
 int main() {
     Stack<string>* s = new Stack<string>();
 

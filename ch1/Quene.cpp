@@ -8,7 +8,6 @@ using std::string;
 using std::istringstream;
 
 
-
 template <typename T>
 class Quene {
 public:
@@ -50,6 +49,7 @@ private:
     int N = 0;
 
 };
+
 int main() {
     Quene<string>* q = new Quene<string>();
 

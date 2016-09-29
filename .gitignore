@@ -1,9 +1,10 @@
 .idea/
 lib/
 algs4-data/
-ch1/*
-!ch1/*.cpp
-!ch1/*.h
+
+ch1/1.*
+!ch1/1.*.cpp
+!ch1/1.*.h
 
 
 # Prerequisites
