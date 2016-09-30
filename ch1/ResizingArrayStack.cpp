@@ -1,40 +1,39 @@
 #include <string>
 using std::string;
 #include <cassert>
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 
 template <typename T>
 class ResizingArrayStack {
 public:
-    ResizingArrayStack(int cap = 0): a(new T[cap]), N(0), capacity(cap) {}
-    ~ResizingArrayStack() {delete [] a;}
-    ResizingArrayStack(const ResizingArrayStack& stack): a(new T[stack.capacity]), N(stack.N),
+    ResizingArrayStack(int cap = 0): a(new T[cap], [](T* p) {delete [] p;}), N(0), capacity(cap) {}
+    ResizingArrayStack(const ResizingArrayStack& stack): a(new T[stack.capacity], [](T* p) {delete [] p;}), N(stack.N),
         capacity(stack.capacity) {
             for (int i = 0; i != stack.N; ++i) {
-                a[i] = stack.a[i];
+                *(a.get() + i) = *(stack.a.get() + i);
             }
     }
     ResizingArrayStack& operator=(const ResizingArrayStack& stack) {
-        T* tmp = new T[stack.capacity];
+        decltype(a) tmp(new T[stack.capacity], [](T* p) {delete [] p;});
         for (int i = 0; i != stack.N; ++i) {
-            a[i] = stack.a[i];
+            *(a.get() + i) = *(stack.a.get() + i);
         }
-        delete [] a;
         a = tmp;
         N = stack.N;
         capacity = stack.capacity;
     }
 
-
     bool isEmpty() {return N == 0;}
     int size() {return N;}
     int cap() {return capacity;}
     void resize(int max) {
-        T* temp = new T[max];
+        decltype(a) tmp(new T[max], [](T* p) {delete [] p;});
         for (int i = 0; i < N; ++i) {
-            temp[i] = a[i];
+            *(tmp.get() + i) = *(a.get() + i);
         }
-        delete [] a;
-        a = temp;
+        a = tmp;
         capacity = max;
     }
     void push(T item) {
@@ -45,10 +44,12 @@ public:
                 resize(2 * capacity);
             }
         }
-        a[N++] = item;
+        *(a.get() + N) = item;
+        ++N;
     }
     T pop() {
-        T item = a[--N];
+        --N;
+        T item = *(a.get() + N);
         if (N > 0 && N == capacity / 4) {
             resize (capacity / 2);
         }
@@ -56,8 +57,8 @@ public:
     }
 
 private:
-    T* a = new T[0];
-    int N = 0;
+    shared_ptr<T> a = nullptr;
+    int N = 0; 
     int capacity = 0;
 };
 

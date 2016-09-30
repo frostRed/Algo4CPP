@@ -1,6 +1,9 @@
 #include <string>
 using std::string;
 #include <cassert>
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 
 //class Ite;
 
@@ -13,8 +16,8 @@ public:
     bool isEmpty() {return first == nullptr;}
     int size() {return N;}
     void add(T item) {
-        Node* oldfirst = first;
-        first = new Node();
+        shared_ptr<Node> oldfirst = first;
+        first = make_shared<Node>(Node());
         first->item = item;
         first->next = oldfirst;
         ++N;
@@ -26,9 +29,9 @@ public:
 private:
     struct Node {
         T item;
-        Node* next;
+        shared_ptr<Node> next;
     };
-    Node* first;
+    shared_ptr<Node> first;
     int N = 0;
 };
 

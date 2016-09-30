@@ -6,6 +6,9 @@ using std::endl;
 using std::string;
 #include <sstream>
 using std::istringstream;
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 
 
 template <typename T>
@@ -16,8 +19,8 @@ public:
     bool isEmpty() {return first == nullptr;}
     int size() {return N;}
     void push(T item) {
-        Node* oldfirst = first;
-        first = new Node();
+        shared_ptr<Node> oldfirst = first;
+        first = make_shared<Node>(Node());
         first->item = item;
         first->next = oldfirst;
         ++N;
@@ -27,10 +30,9 @@ public:
 
         } else {
             T item = first->item;
-            Node* oldfirst = first;
+            shared_ptr<Node> oldfirst = first;
             first = first->next;
             --N;
-            delete oldfirst;
             return item;
         }
     }
@@ -38,7 +40,7 @@ public:
 private:
     struct Node {
         T item;
-        Node* next;
+        shared_ptr<Node> next;
         /*
         Node(): item(T()), next(nullptr) {}
         ~Node() {delete next;}
@@ -57,12 +59,12 @@ private:
         */
     };
 
-    Node* first;
+    shared_ptr<Node> first = nullptr;
     int N = 0;
 };
 
 int main() {
-    Stack<string>* s = new Stack<string>();
+    shared_ptr<Stack<string>> s = make_shared<Stack<string>>(Stack<string>());
 
     string line;
     getline(cin, line);
@@ -76,6 +78,4 @@ int main() {
         }
     }
     cout << "(" + std::to_string(s->size()) + " left on stack)" << endl;
-
-    delete s;
 }

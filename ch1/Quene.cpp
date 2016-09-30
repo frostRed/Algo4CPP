@@ -6,6 +6,9 @@ using std::endl;
 using std::string;
 #include <sstream>
 using std::istringstream;
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 
 
 template <typename T>
@@ -16,8 +19,8 @@ public:
     bool isEmpty() {return first == nullptr;}
     int size() {return N;}
     void enqueue(T item) {
-        Node* oldlast = last;
-        last = new Node;
+        shared_ptr<Node> oldlast = last;
+        last = make_shared<Node>(Node());
         last->item = item;
         last->next = nullptr;
         if (isEmpty()) {
@@ -29,29 +32,28 @@ public:
     }
     T dequeue() {
         T item = first->item;
-        Node* oldfirst = first;
+        shared_ptr<Node> oldfirst = first;
         first = first->next;
         if (isEmpty()) {
             last = nullptr;
         }
         --N;
-        delete oldfirst;
         return item;
     }
 
 private:
     struct Node {
         T item;
-        Node* next;
+        shared_ptr<Node> next;
     };
-    Node* first;
-    Node* last;
+    shared_ptr<Node> first;
+    shared_ptr<Node> last;
     int N = 0;
 
 };
 
 int main() {
-    Quene<string>* q = new Quene<string>();
+    shared_ptr<Quene<string>> q(new Quene<string>());
 
     string line;
     getline(cin, line);
@@ -65,6 +67,4 @@ int main() {
         }
     }
     cout << "(" + std::to_string(q->size()) + " left on stack)" << endl;
-    
-    delete q;
 }
