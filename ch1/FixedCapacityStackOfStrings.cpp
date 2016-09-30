@@ -6,23 +6,27 @@ using std::endl;
 using std::string;
 #include <sstream>
 using std::istringstream;
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 
 
 class FixedCapacityStackOfStrings {
 public:
-    FixedCapacityStackOfStrings(int cap): a(new string[cap]), N(0), capacity(cap) {}
-    FixedCapacityStackOfStrings(const FixedCapacityStackOfStrings& stack): a(new string[stack.capacity]),
+    FixedCapacityStackOfStrings(int cap): a(new string[cap], [](string* p) {delete [] p;}),
+        N(0), capacity(cap) {}
+    FixedCapacityStackOfStrings(const FixedCapacityStackOfStrings& stack):
+        a(new string[stack.capacity], [](string* p) {delete [] p;}),
         N(stack.N), capacity(stack.capacity) {
             for (int i = 0; i != stack.N; ++i) {
-                a[i] = stack.a[i];
+                *(a.get() + i) = *(stack.a.get() + i);
             }
     }
     FixedCapacityStackOfStrings& operator=(const FixedCapacityStackOfStrings& stack) {
-        string* tmp = new string[stack.capacity];
+        shared_ptr<string> tmp(new string[stack.capacity], [](string* p) {delete [] p;});
         for (int i = 0; i != stack.N; ++i) {
-            tmp[i] = stack.a[i];
+            *(tmp.get() + i) = *(stack.a.get() + i);
         }
-        delete [] a;
         a = tmp;
         N = stack.N;
         capacity = stack.capacity;
@@ -31,21 +35,24 @@ public:
     
     bool isEmpty() {return N == 0;}
     int size() {return N;}
-    void push(const string s) {a[N++] = s;}
-    string pop() {return a[--N];}
-
-    ~FixedCapacityStackOfStrings() {delete [] a;}
+    void push(const string s) {
+        *(a.get() + N) = s;
+        ++N;
+    }
+    string pop() {
+        --N;
+        return *(a.get() + N);
+    }
 
 private:
-    string* a = nullptr;
+    shared_ptr<string> a = nullptr;
     int N = 0;
     int capacity = 0;
 };
 
 
 int main() {
-    FixedCapacityStackOfStrings* s;
-    s = new FixedCapacityStackOfStrings(100);
+    shared_ptr<FixedCapacityStackOfStrings> s(new FixedCapacityStackOfStrings(100));
 
     string line;
     getline(cin, line);
