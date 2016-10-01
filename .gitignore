@@ -1,3 +1,15 @@
+.idea/
+lib/
+algs4-data/
+
+ch1/*
+!ch1/*.cpp
+!ch1/*.h
+
+
+# Prerequisites
+*.d
+
 # Compiled Object files
 *.slo
 *.lo
