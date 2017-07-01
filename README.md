@@ -1,2 +1,2 @@
-# Algo4CPP
-Algorithms 4th in C++
+# Fundamentals of algorithms(geeksforgeeks.org)
+Fundamentals of algorithms in Nim
