@@ -9,7 +9,7 @@ proc linearSearch(arr: openArray[int], x: int): int =
 proc binarySearchRec(arr: openArray[int], left: int, right: int, x: int): int =
   ## 已排序，比较中间位置，减少一半
   if left <= right:
-    let mid: int = (left + right) div 2
+    let mid: int = left + (right - left) div 2
     if arr[mid] == x:
       return mid
     elif arr[mid] > x:
@@ -24,7 +24,7 @@ proc binarySearchIte(arr: openArray[int], left: int, right: int, x: int): int =
   var right = right
   var left = left
   while left <= right:
-    let mid = (left + right) div 2
+    let mid: int = left + (right - left) div 2
     if arr[mid] == x:
       return mid
     elif arr[mid] > x:
