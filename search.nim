@@ -67,6 +67,15 @@ proc interpolationSearch(arr: openArray[int], x: int): int =
       left = pos + 1
   return -1
 
+proc exponentialSearch(arr: openArray[int], x:int): int =
+  let arr_len = arr.len()
+  if arr[0] == x:
+    return 0
+  var index = 1
+  while index < arr_len and arr[index] <= x:
+    index *= 2
+  return binarySearchIte(arr, index div 2, min(index, arr_len-1), x)
+
 when isMainModule:
   assert linearSearch([1, 2, 3], 4) == -1
   assert linearSearch([1, 2, 3], 2) == 1
@@ -79,5 +88,9 @@ when isMainModule:
   assert jumpSearch([1, 2, 3], 4) == -1
   assert jumpSearch([0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610],
         55) == 10
+
   assert interpolationSearch([0, 1, 1, 2, 3, 5, 8, 13, 21, 34,
       55, 89, 144, 233, 377, 610], 55) == 10
+
+  assert exponentialSearch([1, 2, 3], 4) == -1
+  assert exponentialSearch([1, 2, 3], 2) == 1
