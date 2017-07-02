@@ -1,11 +1,13 @@
 import Math
 proc linearSearch(arr: openArray[int], x: int): int =
+  ## 一个个比较
   for index, val in arr.pairs():
     if val == x:
       return index
   return -1
 
 proc binarySearchRec(arr: openArray[int], left: int, right: int, x: int): int =
+  ## 已排序，比较中间位置，减少一半
   if left <= right:
     let mid: int = (left + right) div 2
     if arr[mid] == x:
@@ -18,6 +20,7 @@ proc binarySearchRec(arr: openArray[int], left: int, right: int, x: int): int =
     return -1;
 
 proc binarySearchIte(arr: openArray[int], left: int, right: int, x: int): int =
+  ## 已排序，比较中间位置，减少一半
   var right = right
   var left = left
   while left <= right:
@@ -31,7 +34,8 @@ proc binarySearchIte(arr: openArray[int], left: int, right: int, x: int): int =
   return -1
 
 proc jumpSearch(arr: openArray[int], x: int): int =
-  # 虽然时间复杂度是根号级别，它只需回退1次
+  ## 已排序，均匀划分成区间，确定在某个区间后线性搜索
+  ## 虽然时间复杂度是根号级别，它只需回退1次
   let arr_len: int = arr.len()
   let step: int  = sqrt(arrLen.float64).int
   var index = step 
@@ -55,6 +59,7 @@ proc jumpSearch(arr: openArray[int], x: int): int =
     return -1
 
 proc interpolationSearch(arr: openArray[int], x: int): int =
+  ## 二分的改进，每次不是中点，而是看搜索的值离两端的值那个近
   var left = 0
   var right = arr.len() - 1
   while left <= right:
@@ -68,6 +73,7 @@ proc interpolationSearch(arr: openArray[int], x: int): int =
   return -1
 
 proc exponentialSearch(arr: openArray[int], x:int): int =
+  ## 已排序，区间大小不均匀，1，2，4，8划分，找到区间后二分搜索
   let arr_len = arr.len()
   if arr[0] == x:
     return 0
@@ -75,6 +81,26 @@ proc exponentialSearch(arr: openArray[int], x:int): int =
   while index < arr_len and arr[index] <= x:
     index *= 2
   return binarySearchIte(arr, index div 2, min(index, arr_len-1), x)
+
+proc ternarySearch(arr: openArray[int], left, right:int , x: int): int =
+  ## 已排序，类似二分搜索，分成三个区间，比较中间两个点
+  if left > right:
+    return -1
+
+  let step = (right - left) div 3
+  let mid1 = left + step;
+  let mid2 = mid1 + step;
+  if arr[mid1] == x:
+    return mid1
+  elif arr[mid2] == x:
+    return mid2
+
+  if arr[mid1] > x:
+    return ternarySearch(arr, left, mid1-1, x)
+  elif arr[mid2] < x:
+    return ternarySearch(arr, mid2+1, right, x)
+  else:
+    return ternarySearch(arr, mid1, mid2, x)
 
 when isMainModule:
   assert linearSearch([1, 2, 3], 4) == -1
@@ -94,3 +120,6 @@ when isMainModule:
 
   assert exponentialSearch([1, 2, 3], 4) == -1
   assert exponentialSearch([1, 2, 3], 2) == 1
+
+  assert ternarySearch([1, 2, 3], 0, 2, 4) == -1
+  assert ternarySearch([1, 2, 3], 0, 2, 2) == 1
