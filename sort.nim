@@ -198,6 +198,7 @@ proc shellSort*[T](arr: var openArray[T]) =
 
 proc combSort*[T](arr: var openArray[T]) =
   ## 冒泡排序的改进，跟希尔排序一样，间隔从大到小直至 1
+  ## 最差还是 O(n^2)
   var gap = high(arr) * 10 div 13
   var swaped = false
   while gap != 1 or swaped:
@@ -214,6 +215,25 @@ proc combSort*[T](arr: var openArray[T]) =
     if gap < 1:
       gap = 1
 
+proc pigeonholeSort*[T](arr: var openArray[T]) =
+  ## 类似于计数排序和桶排序,但并不记录个数，而是在每个桶存放相同的值，这个值有几个放几个
+  let min_val = min(arr)
+  let max_val = max(arr)
+  let rang: int = max_val - min_val + 1
+
+  var buckets = newSeq[seq[int]]()
+  for i in 0..<rang:
+    buckets.add(@[])
+  
+  for i in arr.items():
+    buckets[i - min_val].add(i)
+
+  var index = 0
+  for i in buckets.items():
+    for j in i.items():
+      arr[index] = j
+      inc index
+  
 when isMainModule:
   var arr = [64, 25, 12, 22, 11]
   #selectionSort(arr)
@@ -226,5 +246,6 @@ when isMainModule:
   #var arr_float = [0.897, 0.565, 0.656, 0.1234, 0.665, 0.3434]
   #bucketSort(arr_float)
   #shellSort(arr)
-  combSort(arr)
+  #combSort(arr)
+  pigeonholeSort(arr)
   assert isSorted(arr) == true
