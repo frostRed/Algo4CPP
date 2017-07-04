@@ -47,6 +47,7 @@ proc insertionSort(arr: var openArray[int]) =
       arr[index + 1] = val
 
 proc merge(arr: var openArray[int], left, mid, right: int) =
+  ## 先复制两个区间出来，在归并放回去
   var arr1 = newSeq[int]() 
   var arr2 = newSeq[int]() 
   for i in left..right:
@@ -76,16 +77,51 @@ proc merge(arr: var openArray[int], left, mid, right: int) =
     inc pos2
     inc index
 proc mergeSort(arr: var openArray[int], left, right: int) =
+  ## 最差，最好，平均时间都是nlog(n)
+  ## 辅助空间O(n)
+  ## 稳定排序
   if left < right:
     let mid: int = left + (right - left) div 2
     mergeSort(arr, 0, mid)
     mergeSort(arr, mid+1, right)
     merge(arr, 0, mid, right)
 
+proc heapify(arr: var openArray[int], largest_index, pos: int) =
+  ## 最大堆，子节点比父节点大，就交换
+  var larger_pos = pos
+  let left_son = pos * 2 + 1
+  let right_son = pos * 2 + 2
+  if left_son <= largest_index and arr[left_son] > arr[pos]:
+    larger_pos = left_son
+  if right_son <= largest_index and arr[right_son] > arr[pos]:
+    larger_pos = right_son
+  
+  if largest_index == 3:
+    echo pos, left_son, right_son
+  
+  if larger_pos != pos:
+    #echo pos, larger_pos
+    swap(arr[pos], arr[larger_pos])
+    heapify(arr, largest_index, larger_pos)
+
+proc heapSort(arr: var openArray[int]) = 
+  for i in countdown((high(arr) div 2), 0):
+    # 从底下第2行开始堆化
+    heapify(arr, high(arr), i)
+  
+  for i in countdown(high(arr), 0):
+    swap(arr[0], arr[i])
+    for i in arr.items(): echo i
+    echo i, "-----------------"
+    heapify(arr, i, 0)
+
 when isMainModule:
   var arr = [64, 25, 12, 22, 11]
   #selectionSort(arr)
   #bubbleSort(arr)
   #insertionSort(arr)
-  mergeSort(arr, 0, 4)
+  #mergeSort(arr, 0, 4)
+  heapSort(arr)
+  #for i in arr.items(): echo i
   assert isSorted(arr) == true
+
