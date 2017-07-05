@@ -1,12 +1,12 @@
 import Math
-proc linearSearch(arr: openArray[int], x: int): int =
+proc linearSearch*[T](arr: openArray[T], x: T): int =
   ## 一个个比较
   for index, val in arr.pairs():
     if val == x:
       return index
   return -1
 
-proc binarySearchRec(arr: openArray[int], left: int, right: int, x: int): int =
+proc binarySearchRec*[T](arr: openArray[T], left: int, right: int, x: T): int =
   ## 已排序，比较中间位置，减少一半
   if left <= right:
     let mid: int = left + (right - left) div 2
@@ -19,7 +19,7 @@ proc binarySearchRec(arr: openArray[int], left: int, right: int, x: int): int =
   else:
     return -1;
 
-proc binarySearchIte(arr: openArray[int], left: int, right: int, x: int): int =
+proc binarySearchIte*[T](arr: openArray[T], left: int, right: int, x: T): int =
   ## 已排序，比较中间位置，减少一半
   var right = right
   var left = left
@@ -33,7 +33,7 @@ proc binarySearchIte(arr: openArray[int], left: int, right: int, x: int): int =
       left = mid + 1
   return -1
 
-proc jumpSearch(arr: openArray[int], x: int): int =
+proc jumpSearch*[T](arr: openArray[T], x: T): int =
   ## 已排序，均匀划分成区间，确定在某个区间后线性搜索
   ## 虽然时间复杂度是根号级别，它只需回退1次
   let arr_len: int = arr.len()
@@ -58,8 +58,8 @@ proc jumpSearch(arr: openArray[int], x: int): int =
   else:
     return -1
 
-proc interpolationSearch(arr: openArray[int], x: int): int =
-  ## 二分的改进，每次不是中点，而是看搜索的值离两端的值那个近
+proc interpolationSearch*[T](arr: openArray[T], x: T): int =
+  ## 二分的改进，每次不是中点，而是看搜索的值离两端的值哪个近
   var left = 0
   var right = arr.len() - 1
   while left <= right:
@@ -72,7 +72,7 @@ proc interpolationSearch(arr: openArray[int], x: int): int =
       left = pos + 1
   return -1
 
-proc exponentialSearch(arr: openArray[int], x:int): int =
+proc exponentialSearch*[T](arr: openArray[T], x: T): int =
   ## 已排序，区间大小不均匀，1，2，4，8划分，找到区间后二分搜索
   let arr_len = arr.len()
   if arr[0] == x:
@@ -82,7 +82,7 @@ proc exponentialSearch(arr: openArray[int], x:int): int =
     index *= 2
   return binarySearchIte(arr, index div 2, min(index, arr_len-1), x)
 
-proc ternarySearch(arr: openArray[int], left, right:int , x: int): int =
+proc ternarySearch*[T](arr: openArray[T], left, right:int , x: T): int =
   ## 已排序，类似二分搜索，分成三个区间，比较中间两个点
   if left > right:
     return -1
