@@ -233,6 +233,48 @@ proc pigeonholeSort*[T](arr: var openArray[T]) =
     for j in i.items():
       arr[index] = j
       inc index
+
+proc cycleSort*[T](arr: var openArray[T]) =
+  var write = 0
+  for i in low(arr)..<high(arr):
+    # 为每个元素找环
+    var start_pos = i
+    var val = arr[start_pos]
+    var next_pos = i
+
+    for j in start_pos+1..high(arr):
+      # 记录在 val 右侧有几个值比它小，这些值应该位于 val 左侧，需要腾出位置
+      if arr[j] < val:
+        inc next_pos
+    
+    if next_pos == start_pos:
+      # 没有找到下一个节点形成环
+      continue
+    
+    while arr[next_pos] == val:
+      # 排除掉 == val 的元素，找到第一个大于 val 的位置
+      inc next_pos
+    
+    if next_pos != start_pos: # Todo: 为什么这里要 if 判断
+      # 将 val 放进找到的位置，并更新它的值
+      swap(val, arr[next_pos])
+      inc write
+    
+    while next_pos != start_pos:
+      ## 为新的 val 找位置
+      next_pos = start_pos
+      for i in start_pos+1..high(arr):
+        ## 重头再搜一遍，确定比 val 值小的个数
+        if arr[i] < val:
+          inc next_pos
+
+      while arr[next_pos] == val:
+        inc next_pos
+
+      if arr[next_pos] != val: # Todo: 为什么这里要 if 判断
+        swap(val, arr[next_pos])
+        inc write
+
   
 when isMainModule:
   var arr = [64, 25, 12, 22, 11]
@@ -247,5 +289,6 @@ when isMainModule:
   #bucketSort(arr_float)
   #shellSort(arr)
   #combSort(arr)
-  pigeonholeSort(arr)
+  #pigeonholeSort(arr)
+  cycleSort(arr)
   assert isSorted(arr) == true
