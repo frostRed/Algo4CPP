@@ -1,4 +1,4 @@
-#import sequtils
+## 基于比较的排序算法，比较次数的下限是 nlog_2^n
 proc isSorted*[T](arr: openArray[T]): bool =
   result = true
   for i in low(arr)..<high(arr):
@@ -8,6 +8,7 @@ proc isSorted*[T](arr: openArray[T]): bool =
 proc selectionSort*[T](arr: var openArray[T]) =
   ## 找出未排序部分的最小值添加到已排序部分的末尾
   ## 时间O(n^2)，辅助空间O(1)，交换次数O(n)
+  ## 不稳定
   for i in low(arr)..high(arr):
     var min_index = i
     var min_val = arr[min_index]
@@ -104,6 +105,7 @@ proc heapify*[T](arr: var openArray[T], largest_index, pos: int) =
 proc heapSort*[T](arr: var openArray[T]) =
   ## 首先从底下第2层元素开始堆化一遍
   ## 时间O(nlog n)
+  ## 不稳定
   for i in countdown(high(arr) div 2, 0):
     heapify(arr, high(arr), i)
   
@@ -128,8 +130,9 @@ proc partition*[T](arr: var openArray[T], left, right: int): int =
   return less_index + 1
 
 proc quickSort*[T](arr: var openArray[T], left, right: int) =
-  ## 最差时间O(n^2)
+  ## 最差时间O(n^2)，选择最值作为中枢时，应该随机选取中枢，降低最差情况出现的概率
   ## 平均时间O(nlog n)
+  ## 不稳定
   if left < right:
     let pos = partition(arr, left, right)
     quickSort(arr, left, pos - 1)
@@ -154,6 +157,7 @@ proc countSort[T](arr: var openArray[T], exp: int) =
     arr[i] = output[i]
 proc radixSort*[T](arr: var openArray[T]) =
   ## 先对最低位进行计数排序，再对倒数第二位计数排序
+  ## 稳定排序
   let max_val = max(arr)
   var exp = 1
   while max_val div exp > 0:
@@ -163,6 +167,7 @@ proc radixSort*[T](arr: var openArray[T]) =
 proc bucketSort[T](arr: var openArray[T]) =
   ## 桶排序适合元素在某个范围内均匀分布的数据
   ## 实际上是将所有元素平均放在每个桶里，对每个桶排序，在综合起来
+  ## 稳定排序
   var buckets = newSeq[seq[T]]()
   for i in low(arr)..high(arr):
     buckets.add(@[])
@@ -182,6 +187,7 @@ proc bucketSort[T](arr: var openArray[T]) =
 proc shellSort*[T](arr: var openArray[T]) =
   ## 希尔排序是插入排序扩展，隔某个间隔从后往前插入排序，下一轮缩小间隔，直至间隔为1
   ## 时间和序列的选择相关，下面这种减半的序列时间为 n^2
+  ## 不稳定
   var gap = high(arr) div 2
   while gap >= 1:
     for i in gap+1 .. high(arr):
@@ -199,6 +205,7 @@ proc shellSort*[T](arr: var openArray[T]) =
 proc combSort*[T](arr: var openArray[T]) =
   ## 冒泡排序的改进，跟希尔排序一样，间隔从大到小直至 1
   ## 最差还是 O(n^2)
+  ## 不稳定
   var gap = high(arr) * 10 div 13
   var swaped = false
   while gap != 1 or swaped:
@@ -217,6 +224,7 @@ proc combSort*[T](arr: var openArray[T]) =
 
 proc pigeonholeSort*[T](arr: var openArray[T]) =
   ## 类似于计数排序和桶排序,但并不记录个数，而是在每个桶存放相同的值，这个值有几个放几个
+  ## 稳定排序
   let min_val = min(arr)
   let max_val = max(arr)
   let rang: int = max_val - min_val + 1
@@ -235,6 +243,7 @@ proc pigeonholeSort*[T](arr: var openArray[T]) =
       inc index
 
 proc cycleSort*[T](arr: var openArray[T]) =
+  ## 写数组的次数最少
   var write = 0
   for i in low(arr)..<high(arr):
     # 为每个元素找环

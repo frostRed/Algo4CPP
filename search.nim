@@ -60,6 +60,7 @@ proc jumpSearch*[T](arr: openArray[T], x: T): int =
 
 proc interpolationSearch*[T](arr: openArray[T], x: T): int =
   ## 二分的改进，每次不是中点，而是看搜索的值离两端的值哪个近
+  ## 适合均匀分布
   var left = 0
   var right = arr.len() - 1
   while left <= right:
