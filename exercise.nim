@@ -39,8 +39,78 @@ proc minLenUnsortedSubarray*[T](arr: openArray[T]): (int, int) =
       break
 
   return (left, right)
+#####################################################
+####################################################
+ # Merge Sort for Linked Lists
+type  
+  LinkedList[T] = ref Node[T]
+  Node[T] = object
+    value: T
+    next: ref Node[T]
+    
+proc newNode[T](value: T): ref Node[T] =
+  new(result)
+  result.value = value
+proc newLinkedList[T](): LinkedList[T] =
+  return nil
+
+proc push[T](this: var LinkedList[T], value: T) =
+  let old = this
+  this = newNode[T](value)
+  this.next = old
+
+iterator items[T](this: LinkedList[T]): T =
+  var this = this
+  if this != nil:
+    while this != nil:
+      yield this.value
+      this = this.next
+proc getMid[T](this: LinkedList[T]): LinkedList[T] =
+  ## faster 往前走 2 步，lower 往前只走 1 步
+  var lower = this
+  var faster = this.next
+  while faster.next != nil:
+    faster = faster.next
+    if faster.next != nil:
+      faster = faster.next
+      lower = lower.next
+  return lower
+proc sortedMerge[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
+  # 链表递归合并，只需改变指针的指向
+  new(result)
+  if left == nil:
+    return right
+  if right == nil:
+    return left
+  if left.value <= right.value:
+    result = left
+    result.next = sortedMerge(left.next, right)
+  else:
+    result = right
+    result.next = sortedMerge(left, right.next)
+proc mergeSort[T](this: LinkedList[T]): LinkedList[T] =
+  if this != nil and this.next != nil:
+    let mid = this.getMid()
+    let mid_next = mid.next
+    mid.next = nil
+
+    let left = mergeSort(this)
+    let right = mergeSort(mid_next)
+    return sortedMerge(left, right)
+  else:
+    return this
 
 when isMainModule:
   let arr1 = [10, 12, 20, 30, 25, 40, 32, 31, 35, 50, 60]
   let (b, e) = minLenUnsortedSubarray(arr1)
-  echo b, e
+
+  var ll = newLinkedList[int]()
+  assert ll == nil
+  ll.push(15)
+  ll.push(10)
+  ll.push(5)
+  ll.push(20)
+  ll.push(3)
+  ll.push(2)
+  ll = ll.mergeSort()
+  for i in ll.items(): echo i
