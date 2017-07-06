@@ -99,6 +99,44 @@ proc mergeSort[T](this: LinkedList[T]): LinkedList[T] =
     return sortedMerge(left, right)
   else:
     return this
+############################################
+############################################
+#Sort a nearly sorted (or K sorted) array, in O(n log k) time. 
+# 数组中任一个元素的正确位置一定在往左或往右 K 个范围内
+proc minHeapfy(arr: var openArray[int], pos: int) =
+  let left_son = pos * 2 + 1
+  let right_son = pos * 2 + 2
+  var less_pos = pos
+
+  if left_son <= high(arr) and arr[left_son] < arr[less_pos]:
+    less_pos = left_son
+  if right_son <= high(arr) and arr[right_son] < arr[less_pos]:
+    less_pos = right_son
+  if less_pos != pos:
+    swap(arr[pos], arr[less_pos])
+    minHeapfy(arr, less_pos)
+
+proc sortK(arr: var openArray[int], k: int) =
+  var heap = newSeq[int](k + 1)
+  for i in 0..k :
+    heap[i] = arr[i]
+  for i in countdown(high(heap) div 2, 0):
+    minHeapfy(heap, i)
+
+  var index = 0
+  for i in k+1 .. high(arr):
+    arr[index] = heap[0]
+    inc index
+    heap[0] = arr[i]
+    minHeapfy(heap, 0)
+  
+  # 此时 heap 已堆化，arr 中除 heap 中的元素外，其它都已放回
+  while heap.len() >= 1:
+    arr[index] = heap[0]
+    inc index
+    heap[0] = heap[high(heap)]
+    heap.delete(high(heap))
+    minHeapfy(heap, 0)
 
 when isMainModule:
   let arr1 = [10, 12, 20, 30, 25, 40, 32, 31, 35, 50, 60]
@@ -113,4 +151,7 @@ when isMainModule:
   ll.push(3)
   ll.push(2)
   ll = ll.mergeSort()
-  for i in ll.items(): echo i
+
+  var arr2 = [2, 6, 3, 12, 56, 8]
+  sortK(arr2, 3)
+  for i in arr2.items(): echo i
