@@ -58,6 +58,11 @@ proc push[T](this: var LinkedList[T], value: T) =
   let old = this
   this = newNode[T](value)
   this.next = old
+proc getTail[T](this: LinkedList[T]): ref Node[T] =
+  var tmp = this
+  while tmp.next != nil:
+    tmp = tmp.next
+  result = tmp
 
 iterator items[T](this: LinkedList[T]): T =
   var this = this
@@ -65,6 +70,7 @@ iterator items[T](this: LinkedList[T]): T =
     while this != nil:
       yield this.value
       this = this.next
+
 proc getMid[T](this: LinkedList[T]): LinkedList[T] =
   ## faster 往前走 2 步，lower 往前只走 1 步
   var lower = this
@@ -138,20 +144,68 @@ proc sortK(arr: var openArray[int], k: int) =
     heap.delete(high(heap))
     minHeapfy(heap, 0)
 
+##############################
+##############################
+# QuickSort on Singly Linked List
+proc partition[T](head: ref Node[T], tail: ref Node[T]): (ref Node[T], ref Node[T], ref Node[T]) =
+  ## 比中枢值大的都将节点转移到尾节点之后，所以头和尾都改变了
+  let value = tail.value
+  var newHead: ref Node[T] = nil
+  var newTail = tail
+  
+  var pre_cur: ref Node[T] = nil
+  var cur = head
+  while cur != tail:
+    if cur.value > value:
+      if pre_cur != nil:
+        pre_cur.next= cur.next
+
+      newTail.next = cur
+      cur = newTail.next.next
+
+      newTail.next.next = nil
+      newTail = newTail.next
+    else:
+      if newHead == nil:
+        newHead = cur
+      pre_cur = cur
+      cur = cur.next
+
+  return (newHead, tail, newTail)
+
+
+proc quickSortLinkedList[T](head: ref Node[T], tail: ref Node[T]) =
+  if head != nil and head != tail:
+    let (newHead, pos, newTail) = partition(head, tail)
+    if newHead != pos:
+      var tmp = newHead
+      while tmp.next != pos:
+        tmp = tmp.next
+      # 在 pos 前断开
+      tmp.next = nil
+      quickSortLinkedList(newHead, tmp)
+      
+      # 再重新链接到 pos
+      tmp = newHead.getTail()
+      tmp.next = pos
+
+    quickSortLinkedList(pos.next, newTail)
+
+
+
 when isMainModule:
   let arr1 = [10, 12, 20, 30, 25, 40, 32, 31, 35, 50, 60]
   let (b, e) = minLenUnsortedSubarray(arr1)
 
   var ll = newLinkedList[int]()
-  assert ll == nil
   ll.push(15)
   ll.push(10)
   ll.push(5)
   ll.push(20)
   ll.push(3)
   ll.push(2)
-  ll = ll.mergeSort()
+  #ll = ll.mergeSort()
+  quickSortLinkedList(ll, ll.getTail())
 
   var arr2 = [2, 6, 3, 12, 56, 8]
   sortK(arr2, 3)
-  for i in arr2.items(): echo i
