@@ -53,7 +53,62 @@ proc getMid[T](this: LinkedList[T]): LinkedList[T] =
       faster = faster.next
       lower = lower.next
   return lower
-proc sortedMerge[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
+proc sortedMerge1[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
+  var left = left
+  var right = right
+  var dummy: Node[T]
+  # 不能对 dummy 直接取引用得到 tail
+  var tail: ref Node[T]
+  if left == nil:
+    dummy.next = right
+    return
+  if right == nil:
+    dummy.next = left
+    return
+  if left.data <= right.data:
+    dummy.next = left
+    left = left.next
+  else:
+    dummy.next = right
+    right = right.next
+  tail = dummy.next
+  while true:
+    if left == nil:
+      tail.next = right
+      break
+    if right == nil:
+      tail.next = left
+      break
+    if left.data <= right.data:
+      tail.next = left
+      left = left.next
+    else:
+      tail.next = right
+      right = right.next
+    tail = tail.next
+  return dummy.next
+proc sortedMerge2[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
+  var left = left
+  var right = right
+  var dummy: ref Node[T]
+  new(dummy)
+  var tail: ref Node[T]  = dummy
+  while true:
+    if left == nil:
+      tail.next = right
+      break
+    if right == nil:
+      tail.next = left
+      break
+    if left.data <= right.data:
+      tail.next = left
+      left = left.next
+    else:
+      tail.next = right
+      right = right.next
+    tail = tail.next
+  return dummy.next
+proc sortedMergeRec[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
   # 链表递归合并，只需改变指针的指向
   new(result)
   if left == nil:
@@ -62,10 +117,10 @@ proc sortedMerge[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
     return left
   if left.data <= right.data:
     result = left
-    result.next = sortedMerge(left.next, right)
+    result.next = sortedMergeRec(left.next, right)
   else:
     result = right
-    result.next = sortedMerge(left, right.next)
+    result.next = sortedMergeRec(left, right.next)
 proc mergeSort[T](this: LinkedList[T]): LinkedList[T] =
   if this != nil and this.next != nil:
     let mid = this.getMid()
@@ -74,7 +129,8 @@ proc mergeSort[T](this: LinkedList[T]): LinkedList[T] =
 
     let left = mergeSort(this)
     let right = mergeSort(mid_next)
-    return sortedMerge(left, right)
+    #return sortedMergeRec(left, right)
+    return sortedMerge1(left, right)
   else:
     return this
 ############################################
@@ -186,8 +242,8 @@ when isMainModule:
   ll.pushBack(3)
   ll.pushBack(2)
   ll.print()
-  #ll = ll.mergeSort()
-  ll= quickSortLinkedList(ll, ll.getTail())
+  ll = ll.mergeSort()
+  #ll= quickSortLinkedList(ll, ll.getTail())
   ll.print()
 
   var arr2 = [2, 6, 3, 12, 56, 8]
