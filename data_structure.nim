@@ -148,6 +148,24 @@ proc reverseRec*[T](this: var LinkedList[T]) =
   if this != nil:
     reverseRecUtil(this, nil, this)
 
+proc reverseIte*[T](this: var LinkedList[T], cnt: int) =
+  ## 只反转链表中前 cnt 个元素
+  let head = this
+  var pre: ref Node[T] = nil
+  var cur = this
+  var tmp_next: ref Node[T]
+  var count = 0
+  while count != cnt and cur != nil:
+    tmp_next = cur.next
+    cur.next = pre
+    pre = cur
+    cur = tmp_next
+    inc count
+  if count != cnt:
+    raise newException(OSError, "no enough elements in LinkedList to reverse")
+  head.next = cur
+  this = pre
+
 when isMainModule:
   var ll = newLinkedList[int]()
   ll.pushFront(1)
@@ -156,14 +174,17 @@ when isMainModule:
   ll.pushBack(4)
   ll.insertAfter(ll.next, 10)
   ll.insertAfter(ll.getTail(), 5)
+  ll.print()
+  ll.reverseIte(3)
+  ll.print()
   ll.delNode(10)
   ll.delAt(0)
   ll.delAt(1)
   ll.print()
-  ll.swapNode(1, 5)
+  ll.swapNode(2, 5)
   ll.print()
-  #ll.reverseIte()
-  ll.reverseRec()
+  ll.reverseIte()
+  #ll.reverseRec()
   ll.print()
   echo ll.len()
   echo ll.getTail().data
