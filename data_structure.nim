@@ -1,47 +1,49 @@
 type
-  LinkList*[T] = ref Node[T]
-  Node[T] = object
-    data: T
-    next: ref Node[T]
+  LinkedList*[T] = ref Node[T]
+  Node*[T] = object
+    data*: T
+    next*: ref Node[T]
 
 proc newNode*[T](data: T): ref Node[T] = 
   new(result)
   result.data = data
   result.next = nil
-proc newLinkList*[T](): LinkList[T] = 
+proc newLinkedList*[T](): LinkedList[T] = 
   return nil
 
-iterator items*[T](this: LinkList[T]): T =
+iterator items*[T](this: LinkedList[T]): T =
   var this = this
   while this != nil:
     yield this.data
     this = this.next
-proc print*[T](this: LinkList[T]) = 
+proc print*[T](this: LinkedList[T]) = 
   for i in this.items():
     stdout.write($i & " ")
   stdout.write("\n")
-proc getTail*[T](this: LinkList[T]): ref Node[T] =
+proc getTail*[T](this: LinkedList[T]): ref Node[T] =
   var tmp = this
   if this != nil:
     while tmp.next != nil:
       tmp = tmp.next
   return tmp
 
-proc pushFront*[T](this: var LinkList[T], data: T): ref Node[T] {.discardable} =
+proc pushFront*[T](this: var LinkedList[T], data: T): ref Node[T] {.discardable} =
   result = newNode(data)
   result.next = this
   this = result
   return result
-proc insertAfter*[T](pos: ref Node[T], data: T): ref Node[T] {.discardable} =
+proc insertAfter*[T](this: var LinkedList[T], pos: ref Node[T], data: T): ref Node[T] {.discardable} =
   result = newNode(data)
-  if pos != nil:
+  if this != nil:
     result.next = pos.next
     pos.next = result
+  else:
+    this = result
   return result
-proc pushBack*[T](this: LinkList[T], data: T): ref Node[T] {.discardable} =
-  return insertAfter[T](this.getTail(), data)
+proc pushBack*[T](this: var LinkedList[T], data: T): ref Node[T] {.discardable} =
+  return this.insertAfter(this.getTail(), data)
 
-proc delNode*[T](this: var LinkList[T], key: T) =
+proc delNode*[T](this: var LinkedList[T], key: T) =
   if this == nil:
     raise newException(OSError, "Try to delete node in empty Linked  List")
   if this.data != key:
@@ -54,7 +56,7 @@ proc delNode*[T](this: var LinkList[T], key: T) =
       tmp.next = new_next
   else:
     this = this.next
-proc delAt*[T](this: var LinkList[T], pos: int) =
+proc delAt*[T](this: var LinkedList[T], pos: int) =
   assert pos >= 0
   if this == nil:
     raise newException(OSError, "Try to delete node in empty Linked  List")
@@ -76,13 +78,13 @@ proc delAt*[T](this: var LinkList[T], pos: int) =
       pre.next.next = nil
       pre.next = new_next
 
-proc len*[T](this: LinkList[T]): int =
+proc len*[T](this: LinkedList[T]): int =
   if this == nil:
     return 0
   else:
     return 1 + len(this.next)
     
-proc swapNode*[T](this: var LinkList[T], x, y: T) =
+proc swapNode*[T](this: var LinkedList[T], x, y: T) =
   if x == y:
     return
 
@@ -101,7 +103,7 @@ proc swapNode*[T](this: var LinkList[T], x, y: T) =
     tmpy = tmpy.next
   
   if tmpx == nil or tmpy == nil:
-    raise newException(OSError, "can not find these value in LinkList")
+    raise newException(OSError, "can not find these value in LinkedList")
   
   # 先处理 pre.next 这个指针，分为 头节点 和 非头节点 2 中情况处理
   if preX == nil:
@@ -118,7 +120,7 @@ proc swapNode*[T](this: var LinkList[T], x, y: T) =
   tmpx.next = tmpy.next
   tmpy.next = tmp_ref
 
-proc reverseIte*[T](this: var LinkList[T]) = 
+proc reverseIte*[T](this: var LinkedList[T]) = 
   var pre: ref Node[T] = nil
   var curr = this
   var tmp_next: ref Node[T]
@@ -142,18 +144,18 @@ proc reverseRecUtil[T](curr, pre: ref Node[T], head: var ref Node[T]) =
     let tmp_next = curr.next
     curr.next = pre
     reverseRecUtil(tmp_next, curr, head)
-proc reverseRec*[T](this: var LinkList[T]) =
+proc reverseRec*[T](this: var LinkedList[T]) =
   if this != nil:
     reverseRecUtil(this, nil, this)
-  
+
 when isMainModule:
-  var ll = newLinkList[int]()
+  var ll = newLinkedList[int]()
   ll.pushFront(1)
   ll.pushFront(2)
   ll.pushBack(3)
   ll.pushBack(4)
-  insertAfter(ll.next, 10)
-  insertAfter(ll.getTail, 5)
+  ll.insertAfter(ll.next, 10)
+  ll.insertAfter(ll.getTail(), 5)
   ll.delNode(10)
   ll.delAt(0)
   ll.delAt(1)

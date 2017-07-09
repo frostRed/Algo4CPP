@@ -1,4 +1,4 @@
-
+import data_structure
 # Find the Minimum length Unsorted Subarray, sorting which makes the complete array sorted
 proc minLenUnsortedSubarray*[T](arr: openArray[T]): (int, int) =
   assert arr.len() >= 2
@@ -42,34 +42,6 @@ proc minLenUnsortedSubarray*[T](arr: openArray[T]): (int, int) =
 #####################################################
 ####################################################
  # Merge Sort for Linked Lists
-type  
-  LinkedList[T] = ref Node[T]
-  Node[T] = object
-    value: T
-    next: ref Node[T]
-    
-proc newNode[T](value: T): ref Node[T] =
-  new(result)
-  result.value = value
-proc newLinkedList[T](): LinkedList[T] =
-  return nil
-
-proc push[T](this: var LinkedList[T], value: T) =
-  let old = this
-  this = newNode[T](value)
-  this.next = old
-proc getTail[T](this: LinkedList[T]): ref Node[T] =
-  var tmp = this
-  while tmp.next != nil:
-    tmp = tmp.next
-  result = tmp
-
-iterator items[T](this: LinkedList[T]): T =
-  var this = this
-  if this != nil:
-    while this != nil:
-      yield this.value
-      this = this.next
 
 proc getMid[T](this: LinkedList[T]): LinkedList[T] =
   ## faster 往前走 2 步，lower 往前只走 1 步
@@ -88,7 +60,7 @@ proc sortedMerge[T](left: LinkedList[T], right: LinkedList[T]): LinkedList[T] =
     return right
   if right == nil:
     return left
-  if left.value <= right.value:
+  if left.data <= right.data:
     result = left
     result.next = sortedMerge(left.next, right)
   else:
@@ -109,6 +81,7 @@ proc mergeSort[T](this: LinkedList[T]): LinkedList[T] =
 ############################################
 #Sort a nearly sorted (or K sorted) array, in O(n log k) time. 
 # 数组中任一个元素的正确位置一定在往左或往右 K 个范围内
+# K+1 大小的堆排序
 proc minHeapfy(arr: var openArray[int], pos: int) =
   let left_son = pos * 2 + 1
   let right_son = pos * 2 + 2
@@ -149,14 +122,15 @@ proc sortK(arr: var openArray[int], k: int) =
 # QuickSort on Singly Linked List
 proc partition[T](head: ref Node[T], tail: ref Node[T]): (ref Node[T], ref Node[T], ref Node[T]) =
   ## 比中枢值大的都将节点转移到尾节点之后，所以头和尾都改变了
-  let value = tail.value
+  let data = tail.data
   var newHead: ref Node[T] = nil
   var newTail = tail
   
   var pre_cur: ref Node[T] = nil
   var cur = head
   while cur != tail:
-    if cur.value > value:
+    if cur.data > data:
+      # 大的节点换到末尾
       if pre_cur != nil:
         pre_cur.next= cur.next
 
@@ -168,44 +142,53 @@ proc partition[T](head: ref Node[T], tail: ref Node[T]): (ref Node[T], ref Node[
     else:
       if newHead == nil:
         newHead = cur
+      # 小的节点跳过
       pre_cur = cur
       cur = cur.next
+  if newHead == nil:
+    # 若中枢值是最小值
+    newHead = tail
 
   return (newHead, tail, newTail)
 
-
-proc quickSortLinkedList[T](head: ref Node[T], tail: ref Node[T]) =
+proc quickSortLinkedList[T](head: ref Node[T], tail: ref Node[T]): ref Node[T] =
   if head != nil and head != tail:
-    let (newHead, pos, newTail) = partition(head, tail)
+    var (newHead, pos, newTail) = partition(head, tail)
     if newHead != pos:
       var tmp = newHead
       while tmp.next != pos:
         tmp = tmp.next
       # 在 pos 前断开
       tmp.next = nil
-      quickSortLinkedList(newHead, tmp)
+
+      # 更新 newHead
+      newHead = quickSortLinkedList(newHead, tmp)
       
       # 再重新链接到 pos
       tmp = newHead.getTail()
       tmp.next = pos
 
-    quickSortLinkedList(pos.next, newTail)
-
-
+    # 2 个链表重新连接
+    pos.next = quickSortLinkedList(pos.next, newTail)
+    return newHead
+  else:
+    return head
 
 when isMainModule:
   let arr1 = [10, 12, 20, 30, 25, 40, 32, 31, 35, 50, 60]
   let (b, e) = minLenUnsortedSubarray(arr1)
 
   var ll = newLinkedList[int]()
-  ll.push(15)
-  ll.push(10)
-  ll.push(5)
-  ll.push(20)
-  ll.push(3)
-  ll.push(2)
+  ll.pushBack(15)
+  ll.pushBack(10)
+  ll.pushBack(5)
+  ll.pushBack(20)
+  ll.pushBack(3)
+  ll.pushBack(2)
+  ll.print()
   #ll = ll.mergeSort()
-  quickSortLinkedList(ll, ll.getTail())
+  ll= quickSortLinkedList(ll, ll.getTail())
+  ll.print()
 
   var arr2 = [2, 6, 3, 12, 56, 8]
   sortK(arr2, 3)
