@@ -166,6 +166,64 @@ proc reverseIte*[T](this: var LinkedList[T], cnt: int) =
   head.next = cur
   this = pre
 
+proc detectLoopAndRemove*[T](this: var LinkedList[T]): bool {.discardable} =
+  var slow = this
+  var fast = this
+
+  # 必然在环中相遇
+  while slow != nil and fast != nil and fast.next != nil:
+    slow = slow.next
+    fast = fast.next.next
+    if slow == fast:
+      break
+
+  if slow != fast:
+    return false
+    
+  # 数一下环中有多少个元素
+  fast = fast.next
+  var loop_count = 1
+  while fast != slow:
+    fast = fast.next
+    inc loop_count
+
+  slow = this
+  fast = this
+  # fast 先在 loop_count 步
+  for i in 0..<loop_count:
+    fast = fast.next
+  
+  # 必然再环的起始位置相遇
+  while slow != fast:
+    slow = slow.next
+    fast = fast.next
+  # 找到环的末尾
+  while fast.next != slow:
+    fast = fast.next
+  fast.next = nil
+  return true
+
+proc detectLoopAndRemove1*[T](this: var LinkedList[T]): bool {.discardable} =
+  var slow = this
+  var fast = this.next # 注意开始 fast 就比 slow 快 1 步
+  # lower 走 1 步，fast 走 2 步，必然在环中相遇
+  while fast != nil and fast.next != nil:
+    slow = slow.next
+    fast = fast.next.next
+    if slow == fast:
+      break
+
+  if slow != fast:
+    return false
+
+  slow = this
+  while slow != fast.next:
+    # 必然 slow 在环的开始， fast 在环的末尾
+    slow = slow.next
+    fast = fast.next
+  fast.next = nil
+  return true
+
 when isMainModule:
   var ll = newLinkedList[int]()
   ll.pushFront(1)
@@ -186,7 +244,12 @@ when isMainModule:
   ll.reverseIte()
   #ll.reverseRec()
   ll.print()
-  echo ll.len()
-  echo ll.getTail().data
+  ll.pushFront(4)
+  ll.pushFront(3)
+  ll.pushFront(2)
+  ll.pushFront(1)
+  ll.getTail().next = ll.next.next
+  ll.detectLoopAndRemove()
+  ll.print()
   
   
