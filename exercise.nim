@@ -230,6 +230,100 @@ proc quickSortLinkedList[T](head: ref Node[T], tail: ref Node[T]): ref Node[T] =
   else:
     return head
 
+#########################################
+#########################################
+## 2 个用链表表示的十进制数的加法器
+## 从左到右，加法顺序和链接顺序相同
+proc addTwoList(a: LinkedList[int], b: LinkedList[int]): LinkedList[int] =
+  var a = a
+  var b = b
+  result = newLinkedList[int]()
+  var carry = 0
+  var sum = 0
+  while a != nil or b != nil:
+    let left = if a == nil: 0 else: a.data
+    let right = if b == nil: 0 else: b.data
+
+    sum = carry + left + right
+    carry = if sum >= 10: 1 else: 0
+    sum = sum mod 10
+    result.pushBack(sum)
+    if a != nil:
+      a = a.next
+    if b != nil:
+      b = b.next
+
+  if carry == 1:
+    result.pushBack(carry)
+  return result
+#########################################
+#########################################
+## 2 个用链表表示的十进制数的加法器
+## 从右到左，加法顺序和链接顺序相反
+## 递归
+proc addTwoListReverseSameLen(a: ref Node[int], b: ref Node[int], carry: var int): LinkedList[int] =
+  ## 若两个链表长度一样，低位递归相加，根据递归得到的进位，来更新当前位的和
+  if a == nil:
+    return nil
+  result = newNode[int](0)
+  result.next = addTwoListReverseSameLen(a.next, b.next, carry)
+
+  var sum = a.data + b.data + carry
+  carry = if sum >= 10: 1 else: 0
+  sum = sum mod 10
+  result.data = sum
+  return result
+proc addCarryToRemaining(a: LinkedList[int], cur: ref Node[int], carry: var int, r: var ref Node[int]):
+    LinkedList[int] =
+
+  result = r
+  var sum = 0
+  var head = a
+  if head != cur:
+    var tmp = newNode[int](0)
+    # 低位递归和进位值求和
+    tmp.next = addCarryToRemaining(a.next, cur, carry, result)
+    # 更新当前位的和
+    sum = head.data + carry
+    carry = if sum >= 10: 1 else: 0
+    sum = sum mod 10
+    tmp.data = sum
+    result = tmp
+  return result
+
+proc addTwoListReverse(a: LinkedList[int], b: LinkedList[int]): LinkedList[int] =
+  if a == nil:
+    return b
+  if b == nil:
+    return a
+
+  var carry = 0
+  let len1 = a.len()
+  let len2 = b.len()
+  if len1 == len2:
+    result = addTwoListReverseSameLen(a, b, carry)
+  else:
+    var longer: LinkedList[int] = a
+    var shorter: LinkedList[int] = b
+    if len2 > len1:
+      longer = b
+      shorter = a
+
+    let diff = abs(len1 - len2)
+    var cur = a
+    for i in 0 ..< diff:
+      cur = cur.next
+    # 先取出长链表的后半段，作长度一样的链表求和
+    result = addTwoListReverseSameLen(cur, shorter, carry)
+    # 之后得到的进位和长链表的前半段求和
+    result = addCarryToRemaining(longer, cur, carry, result)
+
+  if carry == 1:
+    # 可能最终的和会增加一位
+    result.pushFront(1)
+  return result
+
+
 when isMainModule:
   let arr1 = [10, 12, 20, 30, 25, 40, 32, 31, 35, 50, 60]
   let (b, e) = minLenUnsortedSubarray(arr1)
@@ -248,3 +342,28 @@ when isMainModule:
 
   var arr2 = [2, 6, 3, 12, 56, 8]
   sortK(arr2, 3)
+  echo "-------------------------"
+  var l1 = newLinkedList[int]()
+  var l2 = newLinkedList[int]()
+  l1.pushBack(5)
+  l1.pushBack(6)
+  l1.pushBack(3)
+  l2.pushBack(8)
+  l2.pushBack(4)
+  l2.pushBack(2)
+  l1.print()
+  l2.print()
+  #let l3 = addTwoList(l1, l2)
+  let l3 = addTwoListReverse(l1, l2)
+  l3.print()
+
+  var l4 = newLinkedList[int]()
+  var l5 = newLinkedList[int]()
+  l4.pushBack(9)
+  l4.pushBack(9)
+  l4.pushBack(9)
+  l5.pushBack(1)
+  l5.pushBack(8)
+  let l6 = addTwoList(l4, l5)
+  #let l6 = addTwoListReverse(l4, l5)
+  l6.print()
