@@ -224,6 +224,31 @@ proc detectLoopAndRemove1*[T](this: var LinkedList[T]): bool {.discardable} =
   fast.next = nil
   return true
 
+proc rotate*[T](this: var LinkedList[T], count: int) =
+  if count == 0 or this == nil:
+    return
+
+  var cnt = 0 
+  var pre: ref Node[T]
+  let old_head = this
+  var cur = this
+  while cur != nil and cnt != count:
+    pre = cur
+    cur = cur.next
+    inc cnt
+  if cnt != count:
+    raise newException(OSError, "no enough elements to ratate")
+  if cur == nil:
+    return
+
+  pre.next = nil
+  this = cur
+  var tmp = cur
+  while tmp.next != nil:
+    tmp = tmp.next
+  tmp.next = old_head
+  
+    
 when isMainModule:
   var ll = newLinkedList[int]()
   ll.pushFront(1)
@@ -251,5 +276,8 @@ when isMainModule:
   ll.getTail().next = ll.next.next
   ll.detectLoopAndRemove()
   ll.print()
+  ll.rotate(0)
+  ll.print()
+
   
   
