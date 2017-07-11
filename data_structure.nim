@@ -1,77 +1,82 @@
 type
-  LinkedList*[T] = ref Node[T]
+  LinkedList*[T] = object
+    head: ref Node[T]
   Node*[T] = object
     data*: T
     next*: ref Node[T]
+proc `==`[T](x, y: LinkedList[T]): bool = return x.head == y.head
+proc `==`[T](x, y: Node[T]): bool = return x.data == y.data and x.next == y.next
 
 proc newNode*[T](data: T): ref Node[T] = 
   new(result)
   result.data = data
   result.next = nil
 proc newLinkedList*[T](): LinkedList[T] = 
-  return nil
+  result.head = nil
 
 iterator items*[T](this: LinkedList[T]): T =
-  var this = this
-  while this != nil:
-    yield this.data
-    this = this.next
+  var head = this.head
+  while head != nil:
+    yield head.data
+    head = head.next
 proc print*[T](this: LinkedList[T]) = 
   for i in this.items():
     stdout.write($i & " ")
   stdout.write("\n")
 proc getTail*[T](this: LinkedList[T]): ref Node[T] =
-  var tmp = this
-  if this != nil:
+  var tmp = this.head
+  if this.head != nil:
     while tmp.next != nil:
       tmp = tmp.next
   return tmp
 
 proc pushFront*[T](this: var LinkedList[T], data: T): ref Node[T] {.discardable} =
   result = newNode(data)
-  result.next = this
-  this = result
+  result.next = this.head
+  this.head = result
   return result
 proc insertAfter*[T](this: var LinkedList[T], pos: ref Node[T], data: T): ref Node[T] {.discardable} =
   result = newNode(data)
-  if this != nil:
+  if this.head != nil:
     result.next = pos.next
     pos.next = result
   else:
-    this = result
+    this.head = result
   return result
 proc pushBack*[T](this: var LinkedList[T], data: T): ref Node[T] {.discardable} =
-  return this.insertAfter(this.getTail(), data)
+  let tail = this.getTail()
+  let n: ref Node[T] = insertAfter(this, tail, data)
+  return n
 
 proc delNode*[T](this: var LinkedList[T], key: T) =
-  if this == nil:
+  if this.head == nil:
     raise newException(OSError, "Try to delete node in empty Linked  List")
-  if this.data != key:
+  if this.head.data != key:
     var tmp = this
-    while tmp.next != nil and tmp.next.data != key:
-      tmp = tmp.next
-    if tmp.next != nil:
-      let new_next = tmp.next.next
-      tmp.next.next = nil
-      tmp.next = new_next
+    while tmp.head.next != nil and tmp.head.next.data != key:
+      tmp.head = tmp.head.next
+    if tmp.head.next != nil:
+      let new_next = tmp.head.next.next
+      tmp.head.next.next = nil
+      tmp.head.next = new_next
   else:
-    this = this.next
+    this.head = this.head.next
 proc delAt*[T](this: var LinkedList[T], pos: int) =
   assert pos >= 0
-  if this == nil:
+  if this.head == nil:
     raise newException(OSError, "Try to delete node in empty Linked  List")
 
   if pos == 0:
-    this = this.next
+    this.head = this.head.next
   else:
     var tmp = this
     var pre: ref Node[T] = nil
     var cnt = 0
-    while tmp.next != nil and cnt != pos:
-      pre = tmp
-      tmp = tmp.next
+    while tmp.head.next != nil and cnt != pos:
+      pre = tmp.head
+      tmp.head = tmp.head.next
       inc cnt
-    if tmp.next == nil and cnt != pos:
+    if tmp.head.next == nil and cnt != pos:
       raise newException(OSError, "Try to delete a node out range of Linked  List")
     else:
       let new_next = pre.next.next
@@ -88,8 +93,8 @@ proc swapNode*[T](this: var LinkedList[T], x, y: T) =
   if x == y:
     return
 
-  var tmpx = this
-  var tmpy = this
+  var tmpx = this.head
+  var tmpy = this.head
 
   # Todo: 将两个遍历循环优化为一个
   var preX: ref Node[T] = nil
@@ -107,11 +112,11 @@ proc swapNode*[T](this: var LinkedList[T], x, y: T) =
   
   # 先处理 pre.next 这个指针，分为 头节点 和 非头节点 2 中情况处理
   if preX == nil:
-    this = tmpy
+    this.head = tmpy
   else:
     preX.next = tmpy
   if preY == nil:
-    this = tmpx
+    this.head = tmpx
   else:
     preY.next = tmpx
   
@@ -122,7 +127,7 @@ proc swapNode*[T](this: var LinkedList[T], x, y: T) =
 
 proc reverseIte*[T](this: var LinkedList[T]) = 
   var pre: ref Node[T] = nil
-  var curr = this
+  var curr = this.head
   var tmp_next: ref Node[T]
   while curr != nil:
     # 必须临时保存正向的下一个，因为等会改动了 curr.next
@@ -133,7 +138,7 @@ proc reverseIte*[T](this: var LinkedList[T]) =
     pre = curr
     curr = tmp_next
   # 更新 head
-  this = pre
+  this.head = pre
 
 proc reverseRecUtil[T](curr, pre: ref Node[T], head: var ref Node[T]) =
   var curr = curr
@@ -150,9 +155,9 @@ proc reverseRec*[T](this: var LinkedList[T]) =
 
 proc reverseIte*[T](this: var LinkedList[T], cnt: int) =
   ## 只反转链表中前 cnt 个元素
-  let head = this
+  let head = this.head
   var pre: ref Node[T] = nil
-  var cur = this
+  var cur = this.head
   var tmp_next: ref Node[T]
   var count = 0
   while count != cnt and cur != nil:
@@ -164,11 +169,11 @@ proc reverseIte*[T](this: var LinkedList[T], cnt: int) =
   if count != cnt:
     raise newException(OSError, "no enough elements in LinkedList to reverse")
   head.next = cur
-  this = pre
+  this.head = pre
 
 proc detectLoopAndRemove*[T](this: var LinkedList[T]): bool {.discardable} =
-  var slow = this
-  var fast = this
+  var slow = this.head
+  var fast = this.head
 
   # 必然在环中相遇
   while slow != nil and fast != nil and fast.next != nil:
@@ -187,8 +192,8 @@ proc detectLoopAndRemove*[T](this: var LinkedList[T]): bool {.discardable} =
     fast = fast.next
     inc loop_count
 
-  slow = this
-  fast = this
+  slow = this.head
+  fast = this.head
   # fast 先在 loop_count 步
   for i in 0..<loop_count:
     fast = fast.next
@@ -225,13 +230,13 @@ proc detectLoopAndRemove1*[T](this: var LinkedList[T]): bool {.discardable} =
   return true
 
 proc rotate*[T](this: var LinkedList[T], count: int) =
-  if count == 0 or this == nil:
+  if count == 0 or this.head == nil:
     return
 
   var cnt = 0 
   var pre: ref Node[T]
-  let old_head = this
-  var cur = this
+  let old_head = this.head
+  var cur = this.head
   while cur != nil and cnt != count:
     pre = cur
     cur = cur.next
@@ -242,7 +247,7 @@ proc rotate*[T](this: var LinkedList[T], count: int) =
     return
 
   pre.next = nil
-  this = cur
+  this.head = cur
   var tmp = cur
   while tmp.next != nil:
     tmp = tmp.next
@@ -255,7 +260,7 @@ when isMainModule:
   ll.pushFront(2)
   ll.pushBack(3)
   ll.pushBack(4)
-  ll.insertAfter(ll.next, 10)
+  ll.insertAfter(ll.head.next, 10)
   ll.insertAfter(ll.getTail(), 5)
   ll.print()
   ll.reverseIte(3)
@@ -273,7 +278,7 @@ when isMainModule:
   ll.pushFront(3)
   ll.pushFront(2)
   ll.pushFront(1)
-  ll.getTail().next = ll.next.next
+  ll.getTail().next = ll.head.next.next
   ll.detectLoopAndRemove()
   ll.print()
   ll.rotate(0)
