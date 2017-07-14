@@ -133,6 +133,33 @@ proc splitCircularLinkedList*[T](this: var CircularLinkedList[T]): (CircularLink
   var cll2 = newCircularLinkedList[T]()
   cll2.last = fast
   return (cll1, cll2)
+
+proc sortedInsert*[T](this: var CircularLinkedList[T], data: T) =
+  var n = newNode(data)
+  if this.last == nil:
+    n.next = n
+    this.last = newNode(data)
+    return
+
+  let head = this.last.next
+  if data <= head.data:
+    n.next = head
+    this.last.next = n
+  elif data >= this.last.data:
+    n.next = head
+    this.last.next = n
+    this.last = n
+  else:
+    var tmp = head.next
+    var pre = head
+    while tmp.data < data:
+      pre = tmp
+      tmp = tmp.next
+    n.next = tmp
+    pre.next = n
+    
+
+
   
 
 when isMainModule:
@@ -151,13 +178,16 @@ when isMainModule:
   ll.delAt(4)
   ll.print()
   ll.delAt(1)
-  ll.delAt(1)
-  ll.delAt(1)
-  ll.delAt(0)
   ll.print()
-  let (ll1, ll2) = ll.splitCircularLinkedList()
-  ll1.print()
-  ll2.print()
+  #let (ll1, ll2) = ll.splitCircularLinkedList()
+  ll.delAt(1)
+  ll.print()
+  ll.sortedInsert(2)
+  ll.print()
+  ll.sortedInsert(13)
+  ll.print()
+  ll.sortedInsert(11)
+  ll.print()
 
 
   
