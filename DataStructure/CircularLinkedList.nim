@@ -113,6 +113,27 @@ proc len*[T](this: CircularLinkedList[T]): int =
       inc result
     return result
     
+proc splitCircularLinkedList*[T](this: var CircularLinkedList[T]): (CircularLinkedList[T], CircularLinkedList[T]) =
+  if this.last == nil or this.last.next == this.last:
+    return (this, this)
+  let head = this.last.next
+  var slow = head
+  var fast = head
+  while fast.next != head and fast.next.next != head:
+    slow = slow.next
+    fast = fast.next.next
+  if fast.next.next == head:
+    fast = fast.next
+  let head2 = slow.next
+  slow.next = head
+  fast.next = head2
+
+  var cll1 = newCircularLinkedList[T]()
+  cll1.last = slow
+  var cll2 = newCircularLinkedList[T]()
+  cll2.last = fast
+  return (cll1, cll2)
+  
 
 when isMainModule:
   var ll = newCircularLinkedList[int]()
@@ -130,7 +151,13 @@ when isMainModule:
   ll.delAt(4)
   ll.print()
   ll.delAt(1)
+  ll.delAt(1)
+  ll.delAt(1)
+  ll.delAt(0)
   ll.print()
+  let (ll1, ll2) = ll.splitCircularLinkedList()
+  ll1.print()
+  ll2.print()
 
 
   
